@@ -1,0 +1,10 @@
+{
+  "phaseOneTargetPercent": 66,
+  "phaseThreeTargetPercent": 88,
+  "labelText": "vibe-motion",
+  "phaseOneDurationSeconds": 3.75,
+  "phaseTwoPauseSeconds": 0.45,
+  "phaseThreeDurationSeconds": 1.8,
+  "videoWidth": 1080,
+  "videoHeight": 1080
+}

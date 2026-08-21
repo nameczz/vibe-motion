@@ -1,0 +1,81 @@
+# macOS and editor metadata
+.DS_Store
+**/.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Dependencies and package-manager caches
+**/node_modules/
+**/.npm-cache/
+**/.pnpm-store/
+**/.yarn/cache/
+
+# Python environments and caches
+.venv/
+**/venv/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local tool and browser state
+.cache/
+.playwright-cli/
+**/.cache/
+**/.remotion/
+**/.ai/
+**/.vibe-motion/
+**/AGENTS.md
+
+# Logs and local environment overrides
+*.log
+*.pid
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Generated application and test output
+**/out/
+**/dist/
+**/build/
+**/coverage/
+**/renders/
+**/rendered/
+**/frames/
+**/outputs/
+production/validation/
+production/effects/validation/
+
+# Generated showcase staging and machine-specific manifests
+production/brand-launch-demo/public/showcase/
+production/brand-launch-demo/showcase/asset-manifest.json
+production/brand-launch-demo/showcase/timeline.json
+production/skills-showcase-v3/**/deliverable.json
+production/skills-showcase-v3/**/contact-sheet.png
+production/workspaces/.threejs-earth-renderer/
+
+# Proprietary NBA reference artwork and its derived demo stay local
+production/html-demos/06-pixel2motion/
+production/skills-showcase-v3/06-pixel2motion/contact-sheet.png
+
+# Unused local reference portrait; the public demo uses original SVG avatars
+production/workspaces/wechat-2d/shared/features/demoMotion/assets/mxz-avatar.jpg
+
+# Rendered and source-reference media kept locally, outside Git
+*.mp4
+*.mov
+*.m4v
+*.webm
+*.avi
+*.mkv
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.flac
+*.aif
+*.aiff

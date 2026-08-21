@@ -1,0 +1,7 @@
+{
+  "name": "threejs-earth",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Three.js earth preview with 16:9 frame export."
+}

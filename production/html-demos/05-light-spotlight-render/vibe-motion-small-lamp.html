@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Light Spotlight Reveal</title>
+<style>
+  :root {
+    color-scheme: only light;
+  }
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #07090D;
+  }
+
+  svg {
+    width: min(100vw, 1080px);
+    height: auto;
+    max-height: min(100vh, 1080px);
+    display: block;
+    visibility: hidden;
+    overflow: visible;
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+  <svg id="mainSVG" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" aria-label="Light spotlight reveal">
+    <defs>
+      <filter id="glow" x="-100%" y="-100%" width="550%" height="550%">
+        <feGaussianBlur stdDeviation="2 6" result="coloredBlur"></feGaussianBlur>
+        <feOffset dx="0" dy="0" result="offsetblur"></feOffset>
+        <feFlood flood-color="#F5F5F5" flood-opacity="0.35"></feFlood>
+        <feComposite in2="offsetblur" operator="in"></feComposite>
+        <feMerge>
+          <feMergeNode></feMergeNode>
+          <feMergeNode in="SourceGraphic"></feMergeNode>
+        </feMerge>
+      </filter>
+      <mask id="lightMask">
+        <g id="lampGroup">
+          <ellipse id="lamp" cx="400" cy="330" rx="105" ry="82" fill="#ffffff"></ellipse>
+        </g>
+      </mask>
+    </defs>
+
+    <g fill="#454545">
+      <text
+        x="400"
+        y="330"
+        text-anchor="middle"
+        dominant-baseline="middle"
+        font-family='"JetBrains Mono Variable","JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace'
+        font-size="118"
+        font-weight="800"
+        letter-spacing="-5.31"
+      >vibe motion</text>
+    </g>
+
+    <g mask="url(#lightMask)">
+      <g filter="url(#glow)" fill="#F5F5F5">
+        <text
+          x="400"
+          y="330"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          font-family='"JetBrains Mono Variable","JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace'
+          font-size="118"
+          font-weight="800"
+          letter-spacing="-5.31"
+        >vibe motion</text>
+      </g>
+      <g fill="#F5F5F5">
+        <text
+          x="400"
+          y="330"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          font-family='"JetBrains Mono Variable","JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace'
+          font-size="118"
+          font-weight="800"
+          letter-spacing="-5.31"
+        >vibe motion</text>
+      </g>
+    </g>
+  </svg>
+
+  <script>
+    gsap.set("#mainSVG", { visibility: "visible" });
+    gsap.fromTo(
+      "#lampGroup",
+      {
+        rotation: -42,
+        svgOrigin: "400 130"
+      },
+      {
+        duration: 1,
+        rotation: 42,
+        svgOrigin: "400 130",
+        ease: "power1.inOut",
+        repeat: -1,
+        yoyo: true
+      }
+    );
+  </script>
+</body>
+</html>

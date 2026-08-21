@@ -1,0 +1,19 @@
+.DS_Store
+*/.DS_Store
+
+# Local dependency/build output, if this static demo is later moved to a bundler.
+node_modules/
+dist/
+build/
+.vscode/
+
+# Local scratch files and generated backups.
+data/
+textures/original-1k/
+textures/solar-system-scope/*.truncated.*
+textures/solar-system-scope/*.tif
+/8k_earth_daymap.jpg
+
+# Runtime/debug output.
+*.log
+*.tmp

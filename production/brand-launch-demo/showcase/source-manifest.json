@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "sourceRoot": "../../skills-showcase-v3",
+  "promptList": "../../prompt-clips/skills_prompt_list.json",
+  "excluded": [
+    "02-brand-launch-video-star",
+    "03-claude-typer",
+    "04-disney-animation-rule-skill"
+  ],
+  "segments": [
+    {
+      "id": "01",
+      "skill": "3d-chladni-render",
+      "promptClip": "../../prompt-clips/01-3d-chladni-render.mov",
+      "promptFrames": 66,
+      "effectFrames": 150
+    },
+    {
+      "id": "05",
+      "skill": "light-spotlight-render",
+      "promptClip": "../../prompt-clips/05-light-spotlight-render.mov",
+      "promptFrames": 70,
+      "effectFrames": 180
+    },
+    {
+      "id": "06",
+      "skill": "pixel2motion",
+      "promptClip": "../../prompt-clips/06-pixel2motion.mov",
+      "promptFrames": 71,
+      "effectFrames": 180
+    },
+    {
+      "id": "07",
+      "skill": "printed-curtain-render",
+      "promptClip": "../../prompt-clips/07-printed-curtain-render.mov",
+      "promptFrames": 67,
+      "effectFrames": 180
+    },
+    {
+      "id": "08",
+      "skill": "procedural-fish-render",
+      "promptClip": "../../prompt-clips/08-procedural-fish-render.mov",
+      "promptFrames": 61,
+      "effectFrames": 210
+    },
+    {
+      "id": "09",
+      "skill": "remotion-3d-ticker",
+      "promptClip": "../../prompt-clips/09-remotion-3d-ticker.mov",
+      "promptFrames": 63,
+      "effectFrames": 180
+    },
+    {
+      "id": "10",
+      "skill": "remotion-candlestick",
+      "promptClip": "../../prompt-clips/10-remotion-candlestick.mov",
+      "promptFrames": 61,
+      "effectFrames": 180
+    },
+    {
+      "id": "11",
+      "skill": "remotion-vinyl-player",
+      "promptClip": "../../prompt-clips/11-remotion-vinyl-player.mov",
+      "promptFrames": 59,
+      "effectFrames": 180
+    },
+    {
+      "id": "12",
+      "skill": "ruler-progress-render",
+      "promptClip": "../../prompt-clips/overrides/12-ruler-progress-liang-meme.mov",
+      "promptText": "做一个尺子进度梗图：梁圣 → 梁神 → 梁哥 → 老梁 → 小梁 → 梁子",
+      "promptFrames": 70,
+      "effectClip": "../../../ruler-progress-animator/out/liang-wenfeng-meme-monochrome-blue-preview.mp4",
+      "effectSha256": "209feffe6a87680f209e2c301c199dc76013157bd4e8cb835f4db3951380905d",
+      "effectFrames": 180,
+      "effectWidth": 2160,
+      "effectHeight": 2160
+    },
+    {
+      "id": "13",
+      "skill": "svg-assembly-animator",
+      "promptClip": "../../prompt-clips/13-svg-assembly-animator.mov",
+      "promptFrames": 62,
+      "effectFrames": 160
+    },
+    {
+      "id": "14",
+      "skill": "threejs-earth-render",
+      "promptClip": "../../prompt-clips/14-threejs-earth-render.mov",
+      "promptFrames": 56,
+      "effectFrames": 181
+    },
+    {
+      "id": "15",
+      "skill": "wechat-2d-render",
+      "promptClip": "../../prompt-clips/15-wechat-2d-render.mov",
+      "promptFrames": 59,
+      "effectFrames": 147
+    }
+  ]
+}

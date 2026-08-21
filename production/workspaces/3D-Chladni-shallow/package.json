@@ -1,0 +1,79 @@
+{
+  "name": "sound-motion-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": "Lykno",
+  "description": "3D Chladni sound-to-motion visualizer for Web and macOS; Windows contributions welcome.",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "build:pages": "bash scripts/build-pages.sh",
+    "capture:media": "electron scripts/capture-release-media.cjs",
+    "start:screensaver:mac": "bash scripts/install-mac-screensaver.sh",
+    "smoke": "electron . --smoke",
+    "smoke:screensaver:mac": "bash scripts/verify-mac-screensaver.sh",
+    "check": "node --check desktop/main.cjs && node --check desktop/preload.cjs && node --check desktop/controller.js && node --check scripts/export-video.cjs && node --check scripts/export-mac-screensaver-assets.cjs && node --check scripts/verify-web-builtin-audio.cjs && node --check scripts/verify-pages.cjs && node --check scripts/capture-release-media.cjs && bash -n scripts/build-pages.sh scripts/package-release.sh",
+    "build:screensaver:mac": "bash scripts/build-mac-screensaver.sh",
+    "install:screensaver:mac": "bash scripts/install-mac-screensaver.sh",
+    "build:lock:mac": "bash scripts/build-mac-lock-launcher.sh",
+    "install:lock:mac": "bash scripts/install-mac-lock-launcher.sh",
+    "lock:mac": "open '/Applications/3D Chladni Lock.app'",
+    "export:video": "electron scripts/export-video.cjs",
+    "verify:web-audio": "electron scripts/verify-web-builtin-audio.cjs",
+    "verify:pages": "electron scripts/verify-pages.cjs",
+    "verify:mac-parity": "electron scripts/verify-mac-visual-parity.cjs",
+    "package:mac": "electron-builder --mac --dir --publish never",
+    "package:win": "electron-builder --win --x64 --dir --publish never",
+    "dist:mac": "electron-builder --mac --publish never",
+    "dist:win": "electron-builder --win --x64 --publish never",
+    "release:artifacts": "bash scripts/package-release.sh"
+  },
+  "build": {
+    "appId": "com.lykno.soundmotion",
+    "productName": "3D Chladni",
+    "files": [
+      "app/**/*",
+      "!app/assets/pulsebox-lofi-production-522875.mp3",
+      "desktop/**/*",
+      "LICENSE",
+      "README.txt",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "desktop/assets/**"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.music",
+      "icon": "desktop/assets/sound-motion-icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "3D Chladni can analyze microphone input when selected.",
+        "NSCameraUsageDescription": "3D Chladni requests screen media only to access system audio for visualization.",
+        "NSScreenCaptureUsageDescription": "3D Chladni captures screen media to access system audio for visualization.",
+        "NSAudioCaptureUsageDescription": "3D Chladni analyzes system audio output to drive the visualizer."
+      }
+    },
+    "win": {
+      "icon": "desktop/assets/sound-motion-icon.ico",
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^42.5.0",
+    "electron-builder": "^26.15.3"
+  }
+}

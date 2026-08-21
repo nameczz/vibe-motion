@@ -1,0 +1,17 @@
+{
+  "project": "Vibe Motion launch film",
+  "accessedAt": "2026-08-18",
+  "assets": [
+    {
+      "id": "vibe-motion-org-avatar",
+      "role": "logo",
+      "localPath": "public/brand/vibe-motion-org-avatar.png",
+      "sourceUrl": "https://avatars.githubusercontent.com/u/268959773?s=200&v=4",
+      "sourceType": "official-repository",
+      "verifiedAgainst": "https://github.com/vibe-motion",
+      "rightsNote": "Exact avatar downloaded from the Vibe Motion GitHub organization endpoint for this launch film.",
+      "authenticity": "verified",
+      "checksum": "sha256:35a154ed10dc94f06aee146df016155b7c62f08d64dd6d5d443293cab0cf3049"
+    }
+  ]
+}

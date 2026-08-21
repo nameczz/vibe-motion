@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" fill="none">
+  <defs>
+    <pattern
+      id="subtleGrid"
+      x="0"
+      y="0"
+      width="64"
+      height="64"
+      patternUnits="userSpaceOnUse"
+    >
+      <path
+        d="M 0 0 L 0 64 M 0 0 L 64 0"
+        fill="none"
+        stroke="#dfe2e8"
+        stroke-width="0.5"
+        opacity="0.65"
+      />
+    </pattern>
+  </defs>
+
+  <rect width="1920" height="1080" fill="#ffffff" />
+  <rect width="1920" height="1080" fill="url(#subtleGrid)" />
+
+  <g transform="translate(800 460)" fill="none" stroke="#111" stroke-linejoin="round" stroke-linecap="round">
+    <ellipse cx="0" cy="210" rx="610" ry="255" fill="rgba(255,255,255,0.58)" />
+
+    <g id="body-shell" fill="#f5f7fb" stroke-width="3">
+      <path d="M -360 44 C -280 -10 -164 -40 0 -48 C 156 -56 286 -42 470 2 C 520 14 540 38 548 68 C 416 90 288 96 128 98 C -60 102 -212 97 -360 44 Z" />
+    </g>
+
+    <g id="front-spoiler" stroke-width="2">
+      <path d="M -350 100 C -246 136 -142 152 -32 156 C -78 206 -176 220 -270 220 C -326 180 -350 144 -350 100 Z" fill="#f7f9fc" />
+      <path d="M -334 118 L -72 132" />
+    </g>
+
+    <g id="rear-spoiler" stroke-width="2">
+      <path d="M 356 126 C 452 92 540 96 612 128 C 536 150 456 160 360 154 C 364 138 360 132 356 126 Z" fill="#f3f6fb" />
+      <path d="M 382 132 L 590 146" />
+    </g>
+
+    <g id="hood" stroke-width="2">
+      <path d="M -268 42 C -198 -4 -110 -20 -14 -22 C 70 -24 164 -4 240 20 C 188 62 132 76 54 88 C -56 100 -172 96 -268 42 Z" fill="#ffffff" />
+    </g>
+
+    <g id="cabin-top" stroke-width="2">
+      <path d="M 0 -58 C 66 -94 160 -98 240 -74 C 292 -58 320 -28 334 12 C 276 30 236 40 178 46 C 86 52 10 38 -40 22 C -30 0 -16 -20 0 -58 Z" fill="#edf1f7" />
+    </g>
+
+    <g id="trunk-lid" stroke-width="2">
+      <path d="M 206 28 C 286 -10 380 -14 468 18 C 430 70 356 96 268 104 C 232 74 214 58 206 28 Z" fill="#f7f9fc" />
+      <path d="M 230 70 L 456 64" />
+    </g>
+
+    <g id="left-door" stroke-width="2">
+      <path d="M -86 56 C -144 72 -214 90 -292 132 C -220 132 -178 130 -128 122 C -96 104 -82 80 -86 56 Z" fill="#ffffff" />
+      <path d="M -86 95 L -292 132" />
+    </g>
+
+    <g id="right-door" stroke-width="2">
+      <path d="M 80 58 C 138 72 204 88 282 132 C 214 132 174 132 122 124 C 94 102 80 84 80 58 Z" fill="#ffffff" />
+      <path d="M 80 95 L 282 132" />
+    </g>
+
+    <g id="front-light" fill="#11131b" stroke-width="2">
+      <path d="M -332 36 C -292 14 -242 4 -196 0 C -224 24 -250 38 -286 48 Z" />
+    </g>
+
+    <g id="rear-light" fill="#171b22" stroke-width="2">
+      <path d="M 318 42 C 362 56 404 74 436 102 C 392 112 346 112 296 102 Z" />
+    </g>
+
+    <g id="left-mirror" stroke-width="3">
+      <path d="M -286 -46 C -294 -16 -286 14 -266 34" />
+      <path d="M -266 -64 C -230 -88 -186 -94 -150 -70" stroke-width="5" />
+    </g>
+
+    <g id="right-mirror" stroke-width="3">
+      <path d="M 286 -46 C 294 -16 286 14 266 34" />
+      <path d="M 266 -64 C 230 -88 186 -94 150 -70" stroke-width="5" />
+    </g>
+
+    <g id="chassis-detail" stroke-width="2.8">
+      <line x1="-120" y1="82" x2="120" y2="82" />
+      <line x1="-94" y1="116" x2="92" y2="116" />
+      <line x1="-70" y1="150" x2="78" y2="150" />
+    </g>
+
+    <g id="wheel-fl" stroke-width="4">
+      <circle cx="-250" cy="182" r="72" fill="#f8fafe" />
+      <circle cx="-250" cy="182" r="44" fill="#ffffff" />
+      <path d="M -250 129 L -250 235" stroke-width="2" />
+      <path d="M -205 182 L -295 182" stroke-width="2" />
+      <circle cx="-250" cy="182" r="15" fill="#11131b" />
+    </g>
+
+    <g id="wheel-fr" stroke-width="4">
+      <circle cx="274" cy="182" r="72" fill="#f8fafe" />
+      <circle cx="274" cy="182" r="44" fill="#ffffff" />
+      <path d="M 274 129 L 274 235" stroke-width="2" />
+      <path d="M 319 182 L 229 182" stroke-width="2" />
+      <circle cx="274" cy="182" r="15" fill="#11131b" />
+    </g>
+
+    <g id="wheel-rl" stroke-width="4">
+      <circle cx="-152" cy="184" r="74" fill="#f8fafe" />
+      <circle cx="-152" cy="184" r="46" fill="#ffffff" />
+      <path d="M -152 131 L -152 237" stroke-width="2" />
+      <path d="M -107 184 L -197 184" stroke-width="2" />
+      <circle cx="-152" cy="184" r="16" fill="#11131b" />
+    </g>
+
+    <g id="wheel-rr" stroke-width="4">
+      <circle cx="366" cy="186" r="74" fill="#f8fafe" />
+      <circle cx="366" cy="186" r="46" fill="#ffffff" />
+      <path d="M 366 133 L 366 239" stroke-width="2" />
+      <path d="M 411 186 L 321 186" stroke-width="2" />
+      <circle cx="366" cy="186" r="16" fill="#11131b" />
+    </g>
+  </g>
+</svg>

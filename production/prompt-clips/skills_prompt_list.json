@@ -1,0 +1,74 @@
+[
+  {
+    "index": 1,
+    "skill": "3d-chladni-render",
+    "prompt": "做一个 3D Chladni 纹理球体动画，带缓慢旋转和冷色光效。",
+    "prompt_clip": "production/prompt-clips/01-3d-chladni-render.mov"
+  },
+  {
+    "index": 5,
+    "skill": "light-spotlight-render",
+    "prompt": "做一个聚光灯扫过标题的 reveal 动效，文字是‘AI 产品动效展示’。",
+    "prompt_clip": "production/prompt-clips/05-light-spotlight-render.mov"
+  },
+  {
+    "index": 6,
+    "skill": "pixel2motion",
+    "prompt": "把一张静态 Logo 转成平滑 SVG，再制作可编辑的 Logo 动效开场。",
+    "prompt_clip": "production/prompt-clips/06-pixel2motion.mov"
+  },
+  {
+    "index": 7,
+    "skill": "printed-curtain-render",
+    "prompt": "把 VIBE MOTION 文字织进可交互线帘，表现丝线起伏和展开。",
+    "prompt_clip": "production/prompt-clips/07-printed-curtain-render.mov"
+  },
+  {
+    "index": 8,
+    "skill": "procedural-fish-render",
+    "prompt": "生成一段自然游动的程序化鱼群动画，气质安静、循环流畅。",
+    "prompt_clip": "production/prompt-clips/08-procedural-fish-render.mov"
+  },
+  {
+    "index": 9,
+    "skill": "remotion-3d-ticker",
+    "prompt": "做一个可循环的 3D 纵向照片滚动墙，让三列素材形成视差。",
+    "prompt_clip": "production/prompt-clips/09-remotion-3d-ticker.mov"
+  },
+  {
+    "index": 10,
+    "skill": "remotion-candlestick",
+    "prompt": "做一段深色交易终端风格的 K 线动画，走势先涨后回落。",
+    "prompt_clip": "production/prompt-clips/10-remotion-candlestick.mov"
+  },
+  {
+    "index": 11,
+    "skill": "remotion-vinyl-player",
+    "prompt": "做一段复古黑胶唱片机动画，唱片转动并滚动专辑文字。",
+    "prompt_clip": "production/prompt-clips/11-remotion-vinyl-player.mov"
+  },
+  {
+    "index": 12,
+    "skill": "ruler-progress-render",
+    "prompt": "做一个尺子进度梗图：梁圣 → 梁神 → 梁哥 → 老梁 → 小梁 → 梁子",
+    "prompt_clip": "production/prompt-clips/overrides/12-ruler-progress-liang-meme.mov"
+  },
+  {
+    "index": 13,
+    "skill": "svg-assembly-animator",
+    "prompt": "做一辆俯视线稿汽车 SVG，先拆解零件，再分层组装回来。",
+    "prompt_clip": "production/prompt-clips/13-svg-assembly-animator.mov"
+  },
+  {
+    "index": 14,
+    "skill": "threejs-earth-render",
+    "prompt": "渲染三维地球航线动画，突出全球连线和穿梭感。",
+    "prompt_clip": "production/prompt-clips/14-threejs-earth-render.mov"
+  },
+  {
+    "index": 15,
+    "skill": "wechat-2d-render",
+    "prompt": "构建微信聊天窗口动效，表现消息流、回复和沟通节奏。",
+    "prompt_clip": "production/prompt-clips/15-wechat-2d-render.mov"
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "videoWidth": 1920,
+  "videoHeight": 1080,
+  "speed": 1,
+  "orbitRadius": 160,
+  "fishScale": 0.66,
+  "maxStep": 16
+}
