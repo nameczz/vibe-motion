@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1440">
+    <title>Car Orbit Explode Loop</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./node_modules/three/build/three.module.js",
+          "three/addons/": "./node_modules/three/examples/jsm/"
+        }
+      }
+    </script>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { width: 1080px; height: 1440px; margin: 0; overflow: hidden; background: #f4f3ef; }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1440px;
+        overflow: hidden;
+        background: radial-gradient(ellipse 82% 58% at 50% 59%, #ffffff 0%, #f5f4f0 52%, #e7e9ea 100%);
+      }
+      #three-canvas { position: absolute; inset: 0; width: 1080px; height: 1440px; display: block; }
+      #root::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        box-shadow: inset 0 0 150px rgba(58, 68, 74, .1);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-hf-id="hf-root" data-composition-id="car-orbit-explode-xhs" data-no-timeline data-start="0" data-duration="5.6" data-width="1080" data-height="1440" data-fps="30">
+      <canvas id="three-canvas" class="clip" data-hf-id="hf-canvas" data-start="0" data-duration="5.6" data-track-index="0" data-layout-ignore aria-label="汽车快速环绕、三拍拆解、复原并循环"></canvas>
+    </div>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+      import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
+      import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+      import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUniformsLib.js";
+
+      const WIDTH = 1080;
+      const HEIGHT = 1440;
+      const DURATION = 5.6;
+      const root = document.getElementById("root");
+      const canvas = document.getElementById("three-canvas");
+      let latestSeekTime = 0;
+      let ready = false;
+      const parts = [];
+
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+      renderer.setSize(WIDTH, HEIGHT, false);
+      renderer.setPixelRatio(1);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.08;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFShadowMap;
+
+      const scene = new THREE.Scene();
+      const pmremGenerator = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), .03).texture;
+      scene.fog = new THREE.FogExp2(0xf4f3ef, .011);
+      const camera = new THREE.PerspectiveCamera(34, WIDTH / HEIGHT, .05, 90);
+      const cameraTarget = new THREE.Vector3(0, .45, 0);
+
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x7e8990, .82));
+
+      const keyLight = new THREE.SpotLight(0xffffff, 76, 36, .62, .52, 1.1);
+      keyLight.position.set(6, 10, 9);
+      keyLight.target.position.set(0, .45, 0);
+      keyLight.castShadow = true;
+      keyLight.shadow.mapSize.set(2048, 2048);
+      keyLight.shadow.camera.near = 1;
+      keyLight.shadow.camera.far = 34;
+      scene.add(keyLight, keyLight.target);
+
+      const cyanStrip = new THREE.SpotLight(0x35dfff, 62, 30, .46, .78, 1.35);
+      cyanStrip.position.set(-8, 5.5, -7);
+      cyanStrip.target.position.set(0, .75, 0);
+      scene.add(cyanStrip, cyanStrip.target);
+
+      const orangeStrip = new THREE.SpotLight(0xff6a24, 30, 25, .42, .72, 1.5);
+      orangeStrip.position.set(8, 2.2, 4);
+      orangeStrip.target.position.set(0, .2, 0);
+      scene.add(orangeStrip, orangeStrip.target);
+
+      RectAreaLightUniformsLib.init();
+      const coolSoftbox = new THREE.RectAreaLight(0x5be5ff, 8.5, 2.2, 8.5);
+      coolSoftbox.position.set(-5.2, 5.8, 5.4);
+      coolSoftbox.lookAt(0, .45, 0);
+      scene.add(coolSoftbox);
+
+      const warmSoftbox = new THREE.RectAreaLight(0xff8a45, 5.4, 1.7, 7.2);
+      warmSoftbox.position.set(5.7, 3.8, -4.8);
+      warmSoftbox.lookAt(0, .25, 0);
+      scene.add(warmSoftbox);
+
+      const topSoftbox = new THREE.RectAreaLight(0xffffff, 3.2, 5.5, 3.2);
+      topSoftbox.position.set(0, 9, 0);
+      topSoftbox.rotation.x = -Math.PI / 2;
+      scene.add(topSoftbox);
+
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(60, 60),
+        new THREE.ShadowMaterial({ color: 0x667078, transparent: true, opacity: .18 })
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -1.23;
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      const modelStage = new THREE.Group();
+      modelStage.rotation.y = -.16;
+      scene.add(modelStage);
+
+      const clamp01 = (value) => Math.max(0, Math.min(1, value));
+      const lerp = (from, to, amount) => from + (to - from) * amount;
+      const smoother = (value) => {
+        const x = clamp01(value);
+        return x * x * x * (x * (x * 6 - 15) + 10);
+      };
+      const easeInOutQuint = (value) => {
+        const x = clamp01(value);
+        return x < .5 ? 16 * x ** 5 : 1 - ((-2 * x + 2) ** 5) / 2;
+      };
+      const easeOutBack = (value) => {
+        const x = clamp01(value);
+        const c1 = 1.24;
+        const c3 = c1 + 1;
+        return 1 + c3 * (x - 1) ** 3 + c1 * (x - 1) ** 2;
+      };
+
+      const BASE_ANGLE = THREE.MathUtils.degToRad(32);
+      const ORBIT_ANGLE = THREE.MathUtils.degToRad(220);
+      const OBSERVE_ANGLE = THREE.MathUtils.degToRad(15);
+
+      function cameraAngleAt(time) {
+        if (time < .22) return BASE_ANGLE;
+        if (time < .95) return lerp(BASE_ANGLE, BASE_ANGLE + ORBIT_ANGLE, easeInOutQuint((time - .22) / .73));
+        if (time < 1.76) return BASE_ANGLE + ORBIT_ANGLE;
+        if (time < 2.58) return BASE_ANGLE + ORBIT_ANGLE + OBSERVE_ANGLE * smoother((time - 1.76) / .82);
+        if (time < 3.46) return BASE_ANGLE + ORBIT_ANGLE + OBSERVE_ANGLE;
+        if (time < 4.25) return lerp(BASE_ANGLE + ORBIT_ANGLE + OBSERVE_ANGLE, BASE_ANGLE, easeInOutQuint((time - 3.46) / .79));
+        return BASE_ANGLE;
+      }
+
+      function partProgressAt(time, delay) {
+        const openStart = 1.08 + delay;
+        const openEnd = 1.58 + delay;
+        const closeStart = 2.58 + (.16 - delay);
+        const closeEnd = 3.18 + (.16 - delay);
+        if (time < openStart) return 0;
+        if (time < openEnd) return easeOutBack((time - openStart) / (openEnd - openStart));
+        if (time < closeStart) return 1;
+        if (time < closeEnd) return 1 - smoother((time - closeStart) / (closeEnd - closeStart));
+        return 0;
+      }
+
+      function collectNamed(rootObject, predicate, claimed) {
+        const found = [];
+        rootObject.traverse((object) => {
+          if (!object.name || claimed.has(object) || !predicate(object.name, object)) return;
+          let parent = object.parent;
+          while (parent && parent !== rootObject) {
+            if (found.includes(parent) || claimed.has(parent)) return;
+            parent = parent.parent;
+          }
+          found.push(object);
+        });
+        found.forEach((object) => object.traverse((child) => claimed.add(child)));
+        return found;
+      }
+
+      function createRigidPart(modelRoot, label, objects, targetOffset, targetEuler, delay) {
+        if (!objects.length) return;
+        modelRoot.updateMatrixWorld(true);
+        const bounds = new THREE.Box3();
+        objects.forEach((object) => bounds.expandByObject(object));
+        const localCenter = modelRoot.worldToLocal(bounds.getCenter(new THREE.Vector3()));
+        const wrapper = new THREE.Group();
+        wrapper.name = `Explode_${label}`;
+        wrapper.position.copy(localCenter);
+        modelRoot.add(wrapper);
+        objects.forEach((object) => wrapper.attach(object));
+        const basePosition = wrapper.position.clone();
+        const baseQuaternion = wrapper.quaternion.clone();
+        const targetQuaternion = baseQuaternion.clone().multiply(new THREE.Quaternion().setFromEuler(targetEuler));
+        parts.push({ wrapper, basePosition, targetPosition: basePosition.clone().add(targetOffset), baseQuaternion, targetQuaternion, delay });
+      }
+
+      function buildExplodedHierarchy(modelRoot) {
+        const claimed = new Set();
+        const exact = (name) => (candidate) => candidate === name;
+        const prefix = (...prefixes) => (candidate) => prefixes.some((value) => candidate.startsWith(value));
+
+        createRigidPart(modelRoot, "roof-glass", collectNamed(modelRoot, prefix("BodyRoofPanel", "BodyWindshield", "BodyWindowsRearSides", "BodyPillars"), claimed), new THREE.Vector3(0, 2.15, -.08), new THREE.Euler(0, .08, 0), 0);
+        createRigidPart(modelRoot, "front-assembly", collectNamed(modelRoot, prefix("BodyHood", "BodyHeadlights", "Engine"), claimed), new THREE.Vector3(0, .54, 2.25), new THREE.Euler(-.2, 0, 0), .035);
+
+        createRigidPart(modelRoot, "right-door", collectNamed(modelRoot, prefix("BodyDoorR", "InteriorDoorR"), claimed), new THREE.Vector3(-1.55, .18, .05), new THREE.Euler(0, -.34, -.07), .07);
+        createRigidPart(modelRoot, "left-door", collectNamed(modelRoot, prefix("BodyDoorL", "InteriorDoorL"), claimed), new THREE.Vector3(1.55, .18, .05), new THREE.Euler(0, .34, .07), .085);
+        [
+          ["front-left-wheel", "WheelFrontL", new THREE.Vector3(-1.28, -.34, 1.36), new THREE.Euler(0, 0, .17), .08],
+          ["front-right-wheel", "WheelFrontR", new THREE.Vector3(1.28, -.34, 1.36), new THREE.Euler(0, 0, -.17), .095],
+          ["rear-left-wheel", "WheelRearL", new THREE.Vector3(-1.28, -.34, -1.3), new THREE.Euler(0, 0, .17), .105],
+          ["rear-right-wheel", "WheelRearR", new THREE.Vector3(1.28, -.34, -1.3), new THREE.Euler(0, 0, -.17), .12]
+        ].forEach(([label, nodeName, offset, rotation, delay]) => createRigidPart(modelRoot, label, collectNamed(modelRoot, exact(nodeName), claimed), offset, rotation, delay));
+
+        createRigidPart(modelRoot, "rear-assembly", collectNamed(modelRoot, prefix("BodyRear", "BodyTaillights", "BodyTurnsignalsRear", "License Plate", "InteriorRearHatch", "InteriorRearPanels"), claimed), new THREE.Vector3(0, .38, -2.05), new THREE.Euler(.14, 0, 0), .13);
+        createRigidPart(modelRoot, "interior", collectNamed(modelRoot, prefix("Interior"), claimed), new THREE.Vector3(0, .78, -.12), new THREE.Euler(0, -.08, 0), .145);
+        createRigidPart(modelRoot, "chassis", collectNamed(modelRoot, (name) => name === "BodyUnderside" || name === "Axles", claimed), new THREE.Vector3(0, -1.3, 0), new THREE.Euler(0, 0, 0), .16);
+        createRigidPart(modelRoot, "body-core", collectNamed(modelRoot, () => true, claimed), new THREE.Vector3(0, 0, 0), new THREE.Euler(0, 0, 0), 0);
+      }
+
+      function stylizeMaterials(model) {
+        model.traverse((object) => {
+          if (!object.isMesh) return;
+          object.castShadow = true;
+          object.receiveShadow = true;
+          const source = Array.isArray(object.material) ? object.material : [object.material];
+          const styled = source.map((material) => {
+            if (!material) return material;
+            const next = material.clone();
+            next.envMapIntensity = .88;
+            if (next.name.includes("Paint 1")) {
+              next.color.setHex(0x004c68);
+              next.metalness = .04;
+              next.roughness = .23;
+              next.envMapIntensity = .2;
+              if ("specularIntensity" in next) {
+                next.specularIntensity = .28;
+                next.specularColor.setHex(0x9fd5df);
+              }
+              if ("clearcoat" in next) { next.clearcoat = 1; next.clearcoatRoughness = .035; }
+              if ("iridescence" in next) {
+                next.iridescence = .12;
+                next.iridescenceIOR = 1.32;
+                next.iridescenceThicknessRange = [110, 320];
+              }
+            } else if (next.name.includes("Paint 2")) {
+              next.color.setHex(0x161d23);
+              next.metalness = .32;
+              next.roughness = .24;
+              next.envMapIntensity = .38;
+              if ("clearcoat" in next) { next.clearcoat = .72; next.clearcoatRoughness = .075; }
+            }
+            if (next.name.includes("Glass") || object.name.includes("Windshield") || object.name.includes("Window")) {
+              next.color.setHex(0x17272e);
+              next.metalness = 0;
+              next.roughness = .045;
+              next.transparent = true;
+              next.opacity = .34;
+              next.depthWrite = false;
+              if ("transmission" in next) {
+                next.transmission = .12;
+                next.thickness = .08;
+                next.ior = 1.5;
+              }
+            }
+            if (next.name.includes("Interior") || next.name.includes("Carmine") || object.name.startsWith("Interior")) {
+              next.color.setHex(0x111519);
+              next.metalness = Math.min(next.metalness ?? 0, .18);
+              next.roughness = .54;
+            }
+            if (next.name.includes("Rim") || next.name.includes("Disc") || next.name === "Brake") {
+              next.color.setHex(0x252b30);
+              next.metalness = .94;
+              next.roughness = next.name.includes("Disc") ? .3 : .19;
+            }
+            if (next.name.includes("Tire")) {
+              next.color.setHex(0x07090a);
+              next.metalness = 0;
+              next.roughness = .78;
+            }
+            if (next.name.includes("Headlight")) {
+              next.color.setHex(0xeafaff);
+              next.emissive?.setHex(0xbdefff);
+              next.emissiveIntensity = 1.15;
+            }
+            if (object.name.includes("BrakePad")) {
+              next.color.setHex(0xff7a18);
+              next.emissive?.setHex(0x6a1600);
+              next.emissiveIntensity = .82;
+              next.metalness = .4;
+              next.roughness = .27;
+            }
+            next.needsUpdate = true;
+            return next;
+          });
+          object.material = Array.isArray(object.material) ? styled : styled[0];
+        });
+      }
+
+      function renderAt(time) {
+        latestSeekTime = Math.max(0, Math.min(DURATION, Number.isFinite(time) ? time : 0));
+        const open = partProgressAt(latestSeekTime, .08);
+        const observe = smoother((latestSeekTime - 1.76) / .82);
+        const theta = cameraAngleAt(latestSeekTime);
+        const openClamped = clamp01(open);
+
+        if (ready) {
+          parts.forEach((part) => {
+            const progress = partProgressAt(latestSeekTime, part.delay);
+            part.wrapper.position.lerpVectors(part.basePosition, part.targetPosition, progress);
+            part.wrapper.quaternion.slerpQuaternions(part.baseQuaternion, part.targetQuaternion, clamp01(progress));
+          });
+
+          const settleWindow = clamp01((latestSeekTime - 3.16) / .34);
+          const settle = latestSeekTime >= 3.16 && latestSeekTime < 3.5
+            ? Math.sin(settleWindow * Math.PI * 3) * (1 - settleWindow) * .035
+            : 0;
+          modelStage.position.y = settle;
+          modelStage.rotation.z = settle * .08;
+
+          const assembledRadius = 13 + Math.abs(Math.sin(theta)) * 2.2;
+          const explodedRadius = 27.4 - observe * 1.25;
+          const radius = lerp(assembledRadius, explodedRadius, openClamped);
+          const cameraHeight = lerp(4.15, 6.05 - observe * .45, openClamped);
+          camera.position.set(Math.sin(theta) * radius, cameraHeight, Math.cos(theta) * radius);
+          cameraTarget.set(0, lerp(.06, .42, openClamped), 0);
+          camera.lookAt(cameraTarget);
+
+          const lightSweep = Math.sin(theta * .82);
+          cyanStrip.position.set(Math.sin(theta + 1.8) * 9, 5.6, Math.cos(theta + 1.8) * 9);
+          orangeStrip.position.set(Math.sin(theta - 1.55) * 8, 2.4, Math.cos(theta - 1.55) * 8);
+          cyanStrip.intensity = 52 + Math.abs(lightSweep) * 22;
+          orangeStrip.intensity = 26 + openClamped * 14;
+
+          keyLight.position.set(Math.sin(theta - .38) * 10, 10.5, Math.cos(theta - .38) * 10);
+        }
+
+        renderer.render(scene, camera);
+      }
+
+      function renderGestureState(rawProgress, rawOrbit = 0) {
+        if (!ready) return;
+        const progress = smoother(clamp01(rawProgress));
+        const orbit = Math.max(-1, Math.min(1, Number(rawOrbit) || 0));
+        const theta = BASE_ANGLE + orbit * THREE.MathUtils.degToRad(48);
+
+        parts.forEach((part) => {
+          const stagger = part.delay * .82;
+          const partProgress = smoother(clamp01((progress - stagger) / (1 - stagger)));
+          part.wrapper.position.lerpVectors(part.basePosition, part.targetPosition, partProgress);
+          part.wrapper.quaternion.slerpQuaternions(part.baseQuaternion, part.targetQuaternion, partProgress);
+        });
+
+        modelStage.position.y = 0;
+        modelStage.rotation.z = 0;
+        const assembledRadius = 13 + Math.abs(Math.sin(theta)) * 2.2;
+        const radius = lerp(assembledRadius, 26.2, progress);
+        const cameraHeight = lerp(4.15, 5.55, progress);
+        camera.position.set(Math.sin(theta) * radius, cameraHeight, Math.cos(theta) * radius);
+        cameraTarget.set(0, lerp(.06, .38, progress), 0);
+        camera.lookAt(cameraTarget);
+
+        const lightSweep = Math.sin(theta * .82);
+        cyanStrip.position.set(Math.sin(theta + 1.8) * 9, 5.6, Math.cos(theta + 1.8) * 9);
+        orangeStrip.position.set(Math.sin(theta - 1.55) * 8, 2.4, Math.cos(theta - 1.55) * 8);
+        cyanStrip.intensity = 52 + Math.abs(lightSweep) * 22;
+        orangeStrip.intensity = 26 + progress * 14;
+        keyLight.position.set(Math.sin(theta - .38) * 10, 10.5, Math.cos(theta - .38) * 10);
+        renderer.render(scene, camera);
+      }
+
+      window.setCarExplodeProgress = renderGestureState;
+      window.addEventListener("message", (event) => {
+        const data = event.data;
+        if (!data || data.type !== "car-gesture-control") return;
+        renderGestureState(Number(data.progress), Number(data.orbit));
+      });
+
+      const ktx2Loader = new KTX2Loader().setTranscoderPath("./node_modules/three/examples/jsm/libs/basis/").detectSupport(renderer);
+      const loader = new GLTFLoader().setKTX2Loader(ktx2Loader);
+      loader.load(
+        "./assets/CarConcept.glb",
+        (gltf) => {
+          const model = gltf.scene;
+          stylizeMaterials(model);
+          const bounds = new THREE.Box3().setFromObject(model);
+          const center = bounds.getCenter(new THREE.Vector3());
+          model.position.set(-center.x, -bounds.min.y - 1.15, -center.z);
+          model.scale.setScalar(1.36);
+          modelStage.add(model);
+          model.updateMatrixWorld(true);
+          buildExplodedHierarchy(model);
+          ready = true;
+          window.__car3dReady = true;
+          renderAt(latestSeekTime);
+        },
+        undefined,
+        (error) => console.error(error)
+      );
+
+      const onSeek = (event) => {
+        const time = Number(event.detail && event.detail.time);
+        if (Number.isFinite(time)) renderAt(time);
+      };
+      window.addEventListener("hf-seek", onSeek);
+      root.addEventListener("hf-seek", onSeek);
+      document.addEventListener("hf-seek", onSeek);
+      renderAt(0);
+    </script>
+  </body>
+</html>

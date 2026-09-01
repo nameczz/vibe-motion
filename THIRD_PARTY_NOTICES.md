@@ -33,6 +33,16 @@ distributed under CC BY 4.0. Attribution: **Solar System Scope / INOVE**. The
 source states that the texture pack is based on NASA elevation and imagery
 data, with additional adjustments by Solar System Scope.
 
+## CarConcept glTF model
+
+`videos/car-3d-exploded-xhs/assets/CarConcept.glb` is from the Khronos Group
+glTF Sample Assets repository and is distributed under CC BY 4.0. The upstream
+model notes and license are retained beside the asset as
+`CarConcept.README.md` and `CarConcept.LICENSE.md`.
+
+Khronos names, logos, and trademarks are excluded from the asset license. This
+repository does not imply endorsement by or affiliation with the Khronos Group.
+
 ## Brands, interface studies, and reference material
 
 Names, product interfaces, avatars, logos, and trademarks shown in motion

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1440">
+    <title>Gesture Controlled Car Explode</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #dfe2e3; }
+      body { position: relative; font-family: Inter, "PingFang SC", system-ui, sans-serif; cursor: grab; user-select: none; }
+      body.dragging { cursor: grabbing; }
+      #stage { position: absolute; width: 1080px; height: 1440px; overflow: hidden; transform-origin: 0 0; background: #f4f3ef; box-shadow: 0 22px 72px rgba(40,50,56,.15); }
+      #car-frame { position: absolute; inset: 0; width: 1080px; height: 1440px; border: 0; background: #f4f3ef; pointer-events: none; }
+      #camera-panel {
+        position: absolute;
+        top: 38px;
+        right: 38px;
+        width: 252px;
+        height: 190px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.62);
+        border-radius: 22px;
+        background: #101418;
+        box-shadow: 0 14px 36px rgba(21,29,33,.2);
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity .25s ease, transform .25s ease;
+        pointer-events: none;
+      }
+      #camera-panel.visible { opacity: 1; transform: translateY(0); }
+      #camera, #hand-overlay { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+      #hand-overlay { transform: none; }
+      #start-panel {
+        position: absolute;
+        left: 50%;
+        bottom: 72px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        transform: translateX(-50%);
+        padding: 12px 14px 12px 22px;
+        border: 1px solid rgba(50,62,69,.12);
+        border-radius: 999px;
+        background: rgba(255,255,255,.84);
+        box-shadow: 0 18px 48px rgba(42,52,58,.14);
+        backdrop-filter: blur(18px);
+      }
+      #status { min-width: 260px; color: #3b464d; font-size: 15px; font-weight: 600; letter-spacing: .04em; white-space: nowrap; }
+      #enable {
+        min-width: 132px;
+        height: 48px;
+        padding: 0 22px;
+        border: 0;
+        border-radius: 999px;
+        color: white;
+        background: #0b1a22;
+        font: inherit;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      #enable:disabled { opacity: .55; cursor: wait; }
+      #meter { position: absolute; left: 54px; right: 54px; bottom: 40px; height: 4px; border-radius: 99px; background: rgba(35,45,51,.12); overflow: hidden; }
+      #meter-fill { width: 0%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #ff7a18, #29cce7); box-shadow: 0 0 14px rgba(41,204,231,.45); }
+    </style>
+  </head>
+  <body>
+    <div id="stage">
+      <iframe id="car-frame" src="./index.html?mode=gesture" title="Gesture controlled exploded car"></iframe>
+      <div id="camera-panel" aria-hidden="true">
+        <video id="camera" autoplay muted playsinline></video>
+        <canvas id="hand-overlay" width="504" height="380"></canvas>
+      </div>
+      <div id="start-panel">
+        <div id="status">横向拖动也可以控制展开</div>
+        <button id="enable" type="button">启用手势</button>
+      </div>
+      <div id="meter"><div id="meter-fill"></div></div>
+    </div>
+
+    <script type="module">
+      const stage = document.getElementById("stage");
+      const frame = document.getElementById("car-frame");
+      const video = document.getElementById("camera");
+      const overlay = document.getElementById("hand-overlay");
+      const ctx = overlay.getContext("2d");
+      const cameraPanel = document.getElementById("camera-panel");
+      const enableButton = document.getElementById("enable");
+      const status = document.getElementById("status");
+      const meterFill = document.getElementById("meter-fill");
+
+      const CONNECTIONS = [
+        [0,1],[1,2],[2,3],[3,4],
+        [0,5],[5,6],[6,7],[7,8],
+        [5,9],[9,10],[10,11],[11,12],
+        [9,13],[13,14],[14,15],[15,16],
+        [13,17],[17,18],[18,19],[19,20],[0,17]
+      ];
+      const clamp01 = (value) => Math.max(0, Math.min(1, value));
+      const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+      const palmCenter = (landmarks) => {
+        const ids = [0, 5, 9, 13, 17];
+        const sum = ids.reduce((acc, id) => ({ x: acc.x + landmarks[id].x, y: acc.y + landmarks[id].y }), { x: 0, y: 0 });
+        return { x: sum.x / ids.length, y: sum.y / ids.length };
+      };
+
+      let recognizer = null;
+      let stream = null;
+      let targetProgress = 0;
+      let currentProgress = 0;
+      let targetOrbit = 0;
+      let currentOrbit = 0;
+      let lastVideoTime = -1;
+      let lastInferenceAt = 0;
+      let dragging = false;
+      let dragStartX = 0;
+      let dragStartProgress = 0;
+      let manualUntil = 0;
+      let stageScale = 1;
+
+      function fitStage() {
+        stageScale = Math.min(innerWidth / 1080, innerHeight / 1440);
+        const left = (innerWidth - 1080 * stageScale) / 2;
+        const top = (innerHeight - 1440 * stageScale) / 2;
+        stage.style.transform = `translate(${left}px, ${top}px) scale(${stageScale})`;
+      }
+
+      function sendState() {
+        frame.contentWindow?.postMessage({
+          type: "car-gesture-control",
+          progress: currentProgress,
+          orbit: currentOrbit
+        }, "*");
+        meterFill.style.width = `${(currentProgress * 100).toFixed(1)}%`;
+      }
+
+      function drawHands(hands) {
+        ctx.clearRect(0, 0, overlay.width, overlay.height);
+        hands.forEach((landmarks, handIndex) => {
+          const color = handIndex === 0 ? "#54e7ff" : "#ff7a2a";
+          ctx.strokeStyle = color;
+          ctx.fillStyle = color;
+          ctx.lineWidth = 4;
+          ctx.lineCap = "round";
+          CONNECTIONS.forEach(([a, b]) => {
+            ctx.beginPath();
+            ctx.moveTo((1 - landmarks[a].x) * overlay.width, landmarks[a].y * overlay.height);
+            ctx.lineTo((1 - landmarks[b].x) * overlay.width, landmarks[b].y * overlay.height);
+            ctx.stroke();
+          });
+          landmarks.forEach((point, index) => {
+            ctx.beginPath();
+            ctx.arc((1 - point.x) * overlay.width, point.y * overlay.height, index === 4 || index === 8 ? 7 : 4, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        });
+      }
+
+      function applyRecognition(result) {
+        const hands = result.landmarks || result.handLandmarks || [];
+        drawHands(hands);
+        if (!hands.length || performance.now() < manualUntil) return;
+
+        if (hands.length >= 2) {
+          const a = palmCenter(hands[0]);
+          const b = palmCenter(hands[1]);
+          const separation = distance(a, b);
+          targetProgress = clamp01((separation - .16) / .5);
+          const mirroredCenterX = 1 - (a.x + b.x) / 2;
+          targetOrbit = clamp01(mirroredCenterX) * 2 - 1;
+          status.textContent = "双手拉开 / 合拢控制拆解";
+          return;
+        }
+
+        const hand = hands[0];
+        const gesture = result.gestures?.[0]?.[0];
+        const gestureName = gesture?.categoryName || gesture?.displayName || "None";
+        const confidence = gesture?.score || 0;
+        if (gestureName === "Open_Palm" && confidence > .52) {
+          targetProgress = 1;
+          status.textContent = "张开手掌 / 展开";
+        } else if (gestureName === "Closed_Fist" && confidence > .52) {
+          targetProgress = 0;
+          status.textContent = "握拳 / 收起";
+        } else {
+          const palmWidth = Math.max(.02, distance(hand[5], hand[17]));
+          const pinchRatio = distance(hand[4], hand[8]) / palmWidth;
+          targetProgress = clamp01((pinchRatio - .25) / 1.05);
+          status.textContent = "拇指与食指距离 / 连续控制";
+        }
+        const center = palmCenter(hand);
+        targetOrbit = clamp01(1 - center.x) * 2 - 1;
+      }
+
+      async function createRecognizer() {
+        const { FilesetResolver, GestureRecognizer } = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/+esm");
+        const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm");
+        const options = {
+          baseOptions: {
+            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
+            delegate: "GPU"
+          },
+          runningMode: "VIDEO",
+          numHands: 2,
+          minHandDetectionConfidence: .55,
+          minHandPresenceConfidence: .5,
+          minTrackingConfidence: .5
+        };
+        try {
+          return await GestureRecognizer.createFromOptions(vision, options);
+        } catch {
+          delete options.baseOptions.delegate;
+          return GestureRecognizer.createFromOptions(vision, options);
+        }
+      }
+
+      async function enableGestures() {
+        enableButton.disabled = true;
+        status.textContent = "正在加载手势模型…";
+        try {
+          [recognizer, stream] = await Promise.all([
+            createRecognizer(),
+            navigator.mediaDevices.getUserMedia({
+              audio: false,
+              video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
+            })
+          ]);
+          video.srcObject = stream;
+          await video.play();
+          cameraPanel.classList.add("visible");
+          enableButton.textContent = "手势已启用";
+          status.textContent = "张开手掌展开，握拳收起";
+        } catch (error) {
+          console.error(error);
+          enableButton.textContent = "重新启用";
+          enableButton.disabled = false;
+          status.textContent = "摄像头不可用，可横向拖动控制";
+        }
+      }
+
+      function tick(now) {
+        if (recognizer && video.readyState >= 2 && video.currentTime !== lastVideoTime && now - lastInferenceAt > 32) {
+          lastVideoTime = video.currentTime;
+          lastInferenceAt = now;
+          try {
+            applyRecognition(recognizer.recognizeForVideo(video, now));
+          } catch (error) {
+            console.warn("Gesture frame skipped", error);
+          }
+        }
+        currentProgress += (targetProgress - currentProgress) * .13;
+        currentOrbit += (targetOrbit - currentOrbit) * .09;
+        sendState();
+        requestAnimationFrame(tick);
+      }
+
+      enableButton.addEventListener("click", enableGestures);
+      document.addEventListener("pointerdown", (event) => {
+        if (event.target === enableButton) return;
+        dragging = true;
+        document.body.classList.add("dragging");
+        dragStartX = event.clientX;
+        dragStartProgress = targetProgress;
+        manualUntil = performance.now() + 1800;
+      });
+      document.addEventListener("pointermove", (event) => {
+        if (!dragging) return;
+        targetProgress = clamp01(dragStartProgress + (event.clientX - dragStartX) / (620 * stageScale));
+        const rect = stage.getBoundingClientRect();
+        targetOrbit = clamp01((event.clientY - rect.top) / rect.height) * 2 - 1;
+        status.textContent = "拖动控制 / 松开后恢复手势";
+        manualUntil = performance.now() + 1800;
+      });
+      document.addEventListener("pointerup", () => {
+        dragging = false;
+        document.body.classList.remove("dragging");
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.code === "Space") {
+          event.preventDefault();
+          targetProgress = targetProgress > .5 ? 0 : 1;
+          manualUntil = performance.now() + 1800;
+        }
+      });
+
+      addEventListener("resize", fitStage);
+      fitStage();
+      requestAnimationFrame(tick);
+    </script>
+  </body>
+</html>

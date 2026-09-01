@@ -1,0 +1,4 @@
+interface:
+  display_name: "Interactive Exploded 3D"
+  short_description: "Build reversible 3D exploded animations and gesture HTML"
+  default_prompt: "Use $interactive-exploded-3d to turn a separable GLB product model into a reversible exploded animation or gesture-controlled HTML demo."

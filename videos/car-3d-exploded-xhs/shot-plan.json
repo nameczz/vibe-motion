@@ -1,0 +1,14 @@
+{
+  "duration": 5.6,
+  "fps": 30,
+  "resolution": [1080, 1440],
+  "shots": [
+    { "from": 0, "to": 0.22, "name": "full-car-hook", "intent": "The car fills roughly 88% of the frame in a clean dark studio." },
+    { "from": 0.22, "to": 0.95, "name": "whip-orbit", "intent": "Camera whips 220 degrees around the assembled car and brakes hard." },
+    { "from": 1.08, "to": 1.76, "name": "three-beat-explode", "intent": "Roof and hood, then doors and wheels, then interior and chassis separate in three rapid tiers." },
+    { "from": 1.76, "to": 2.58, "name": "exploded-observation", "intent": "Camera drifts 15 degrees and pushes in while the exploded assembly remains large." },
+    { "from": 2.58, "to": 3.34, "name": "magnetic-collapse", "intent": "Every rigid group returns to its assembled transform and settles with weight." },
+    { "from": 3.46, "to": 4.25, "name": "reverse-orbit", "intent": "Camera reverses to the opening angle." },
+    { "from": 4.25, "to": 5.6, "name": "loop-breath", "intent": "Clean full-car hold returning exactly to the opening composition." }
+  ]
+}

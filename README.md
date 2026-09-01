@@ -15,6 +15,11 @@ prompt records, and the assembly project for the Vibe Motion skills showcase.
 - `production/skills-showcase-v3/` — prompt records and local rendered inputs
   for individual showcase segments (rendered media is intentionally ignored).
 - `ruler-progress-animator/` — a standalone Remotion/Vite ruler animation.
+- `videos/car-3d-exploded-xhs/` — a portrait Three.js car exploded-view study
+  with deterministic video timing and a webcam gesture-controlled HTML mode.
+- `skills/interactive-exploded-3d/` — a reusable Codex skill for building
+  reversible product explosions and hand-controlled demos from separable 3D
+  models.
 - `references/` — source links and notes only; downloaded reference videos are
   intentionally not published.
 
@@ -44,6 +49,21 @@ For the showcase studio:
 cd production/brand-launch-demo
 pnpm install --frozen-lockfile
 pnpm run dev
+```
+
+For the exploded-car study:
+
+```bash
+cd videos/car-3d-exploded-xhs
+npm ci
+npm run dev
+```
+
+The gesture page is a standalone HTML entry. After dependencies are installed,
+serve the project directory with a static server and open `gesture.html`:
+
+```bash
+python3 -m http.server 3023
 ```
 
 Some production scripts call separately installed Codex skills. They default
